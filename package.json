@@ -1,0 +1,19 @@
+{
+  "name": "bongfarm",
+  "version": "1.0.0",
+  "description": "A Farm for bongs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hardasbricks/BongFarm.git"
+  },
+  "author": "hardasbricks",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hardasbricks/BongFarm/issues"
+  },
+  "homepage": "https://github.com/hardasbricks/BongFarm#readme"
+}
