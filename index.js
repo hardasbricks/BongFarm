@@ -1,19 +1,20 @@
 const fs = require('fs');
 const http = require('http');
 const url = require('url');
+const slugify = require('slugify');
 const replaceTemplate = require('./modules/replace-template');
 // const replaceTemplate = require('./modules/replace-template');
 ///////////////// FILE SYSTEMS /////////////////////////
 
-//blocking 
+//blocking
 // const txt = fs.readFileSync('./txt/input.txt', 'utf-8');
-// console.log(txt); 
+// console.log(txt);
 
 // const txtOut = `This is what we know about the avocado: ${txt} \nCreated on ${Date.now()}`;
 //  fs.writeFileSync('./txt/output.txt', txtOut);
 //  console.log("File written..");
 
- //non blocking
+//non blocking
 //  fs.readFile('./txt/start.txt', 'utf-8', (err, data) => {
 //     if(err){
 //         return console.error("ERROR:... 🌫");
@@ -25,14 +26,12 @@ const replaceTemplate = require('./modules/replace-template');
 //             console.log(data3);
 
 //             fs.writeFile('./txt/final.txt', `${data2}\n${data3}` ,'utf-8', (err => {
-//                 console.log("Files have been written 🤨🤨🤨🤨"); 
+//                 console.log("Files have been written 🤨🤨🤨🤨");
 //             }))
-//          }); 
-//      }); 
-//  }); 
+//          });
+//      });
+//  });
 //  console.log("will read file..");
-
-
 
 //////////////////// SERVERS ///////////////////
 // const replaceTemplate = (temp, product) => {
@@ -50,55 +49,67 @@ const replaceTemplate = require('./modules/replace-template');
 // }
 
 //html teplates
-const tempOverview = fs.readFileSync(`${__dirname}/templates/template-overview.html`, 'utf-8');
-const tempCard = fs.readFileSync(`${__dirname}/templates/template-card.html`, 'utf-8');
-const tempProduct = fs.readFileSync(`${__dirname}/templates/template-product.html`, 'utf-8');
+const tempOverview = fs.readFileSync(
+  `${__dirname}/templates/template-overview.html`,
+  'utf-8'
+);
+const tempCard = fs.readFileSync(
+  `${__dirname}/templates/template-card.html`,
+  'utf-8'
+);
+const tempProduct = fs.readFileSync(
+  `${__dirname}/templates/template-product.html`,
+  'utf-8'
+);
 
 //json data
-const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, 'utf-8'); 
+const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, 'utf-8');
 const productJson = JSON.parse(data);
 
- const server = http.createServer((req, res) => {
+const slugs = productJson.map((el) => slugify(el.productName, { lower: true }));
+console.log(slugify('Fresh-Avocados', { lower: true }));
 
-    const {query, pathname} = url.parse(req.url, true); 
+const server = http.createServer((req, res) => {
+  const { query, pathname } = url.parse(req.url, true);
 
-    //Overview Page
-    if(pathname === '/' || pathname === '/overview'){
-        res.writeHead(200,{'Content-type': 'text/html'});
+  //Overview Page
+  if (pathname === '/' || pathname === '/overview') {
+    res.writeHead(200, { 'Content-type': 'text/html' });
 
-        //replace the placeholders for the cards
-        const cardsHtml = productJson.map(el => replaceTemplate(tempCard, el)).join('');
-        const output = tempOverview.replace(/%PRODUCT_CARDS%/g, cardsHtml);
+    //replace the placeholders for the cards
+    const cardsHtml = productJson
+      .map((el) => replaceTemplate(tempCard, el))
+      .join('');
+    const output = tempOverview.replace(/%PRODUCT_CARDS%/g, cardsHtml);
 
-        res.end(output);
-    }
+    res.end(output);
+  }
 
-    //Product Page
-    else if(pathname === '/product'){
-        res.writeHead(200,{'Content-type': 'text/html'});
-        const product = productJson[query.id];
-        const output = replaceTemplate(tempProduct, product);
-        
-        res.end(output);
-    }
+  //Product Page
+  else if (pathname === '/product') {
+    res.writeHead(200, { 'Content-type': 'text/html' });
+    const product = productJson[query.id];
+    const output = replaceTemplate(tempProduct, product);
 
-    //api
-    else if(pathname === '/api'){
-        res.writeHead(200,{'Content-type': 'application/json'});
-        res.end(data);
-    }
+    res.end(output);
+  }
 
-    //Not Found
-    else{
-        res.writeHead(404, {
-            'Content-type': 'text/html',
-            'my-header': 'fuck-you'
-        });
-        res.end('<h1>Page NOT FOUND!</h1>');
-    }
- });
+  //api
+  else if (pathname === '/api') {
+    res.writeHead(200, { 'Content-type': 'application/json' });
+    res.end(data);
+  }
 
- server.listen(8000, '127.0.0.1', () =>{
-    console.log("Listening to localhost:8000");
- });
+  //Not Found
+  else {
+    res.writeHead(404, {
+      'Content-type': 'text/html',
+      'my-header': 'fuck-you',
+    });
+    res.end('<h1>Page NOT FOUND!</h1>');
+  }
+});
 
+server.listen(8000, '127.0.0.1', () => {
+  console.log('Listening to localhost:8000');
+});
